@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  web:
+    build: ./client
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+
+  api:
+    build: ./server
+    ports:
+      - '4000:4000'
+    depends_on:
+      - db
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=suprss
+      - DATABASE_PASSWORD=suprss
+      - DATABASE_NAME=suprss
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: suprss
+      POSTGRES_PASSWORD: suprss
+      POSTGRES_DB: suprss
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+
+# Exemple de configuration .env
+#DATABASE_HOST=localhost
+#DATABASE_PORT=5432
+#DATABASE_USERNAME=suprss
+#DATABASE_PASSWORD=suprss
+#DATABASE_NAME=suprss
