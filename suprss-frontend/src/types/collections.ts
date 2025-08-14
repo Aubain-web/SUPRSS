@@ -1,3 +1,6 @@
+import type {User} from "./auth.ts";
+import type {RSSFeed} from "./feeds.ts";
+
 export interface Collection {
     id: string;
     name: string;
