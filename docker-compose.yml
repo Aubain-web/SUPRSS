@@ -14,7 +14,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-    # ⚠️ Décommente la ligne suivante SEULEMENT si tu as besoin d'accéder à Postgres depuis l'hôte
     # ports:
     #   - "5434:5432"
 
