@@ -1,0 +1,4 @@
+/* src/styles/globals.css */
+body {
+  @apply bg-white text-black dark:bg-neutral-950 dark:text-white;
+}

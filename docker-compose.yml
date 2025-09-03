@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: suprss-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-suprss}
+      POSTGRES_USER: ${DB_USERNAME:-suprss}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-suprss}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-suprss} -d ${DB_NAME:-suprss}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # ⚠️ Décommente la ligne suivante SEULEMENT si tu as besoin d'accéder à Postgres depuis l'hôte
+    # ports:
+    #   - "5434:5432"
+
+  backend:
+    container_name: suprss-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    environment:
+      # Force DB_HOST à pointer sur le service docker "postgres"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      # URL publique de l'API pour le front (adapter si différent)
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      NODE_ENV: ${NODE_ENV:-development}
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  frontend:
+    container_name: suprss-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # L’URL que le front utilisera pour joindre l’API
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/suprss/api}
+    environment:
+      # Pour les runners (nginx) qui n'utilisent pas d'env à runtime
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/suprss/api}
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  db_data:
